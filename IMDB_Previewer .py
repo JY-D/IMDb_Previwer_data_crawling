@@ -1,8 +1,3 @@
-
-# coding: utf-8
-
-# In[ ]:
-
 import requests
 import re
 import json
@@ -11,7 +6,7 @@ import datetime
 from bs4 import BeautifulSoup
 from operator import is_not
 from functools import partial
-from IPython.display import display, HTML
+#from IPython.display import display, HTML
 
 now = datetime.datetime.now()
 
@@ -241,7 +236,7 @@ def topBox():
     print("\t\t\t\t\t" + "Rate" + "\t" + "Metascore" + "\t" +"weekend" + "\t" + "gross" + "\t" + "weeks" )
     for i in range(0, len(list_weekend_box)):
         print("----------------------------------------------------------------------------------")
-        display(HTML("<img src="'"' + list_posterUrl[i]+ '"'">" ))
+        #display(HTML("<img src="'"' + list_posterUrl[i]+ '"'">" ))
         print(list_title[i]
               + "\n" + list_gen[i] + "\n" +
               list_page[i] + "\t" + list_rate[i] + "\t" + list_score[i] +"\t\t"+ list_weekend_box[i] +"\t"+ list_box[i] +"\t"+ list_week[i]
@@ -292,7 +287,7 @@ def search():
     print("\t\t\t\t\t" + "Rate" + "\t" + "Metascore")
     for i in range(0, len(list_title)):
         print("----------------------------------------------------------------------------------")
-        display(HTML("<img src="'"' + list_posterUrl[i]+ '"'">" ))
+        #display(HTML("<img src="'"' + list_posterUrl[i]+ '"'">" ))
         print(list_title[i] 
               + "\n" + list_gen[i] + "\n" + 
               list_page[i] + "\t" + list_rate[i] + "\t" + list_score[i]
@@ -338,9 +333,3 @@ while wrong_input == 1 :
         else :
             print("Bye")
             wrong_input = 0
-
-
-# In[ ]:
-
-
-
