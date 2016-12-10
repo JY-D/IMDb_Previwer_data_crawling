@@ -5,10 +5,17 @@
 
 import requests
 import re
+import json
+import sys
+import datetime
 from bs4 import BeautifulSoup
 from operator import is_not
 from functools import partial
 from IPython.display import display, HTML
+
+now = datetime.datetime.now()
+
+datasets = []
 
 list_title = []
 list_posterUrl = []
@@ -27,6 +34,7 @@ wrong_input = 1
 
 #clean up data list
 def clenList():
+    datasets[:] = []
     list_posterUrl[:] = []
     list_title[:] = []
     list_page[:] = []
@@ -94,14 +102,17 @@ def getPhoto(beautifulSoup):
     return;
 
 def getResult(beautifulSoup):
+    l_titleurl = []
     for title in beautifulSoup.select('.result_text'):        
         pat = '/title/[a-zA-Z0-9_]+'
         titleurl = title.find('a')
         #print(titleurl)
-        #print(titleurl.parent.name)    
-        titleurlShort = re.findall(pat, ''.join(str(v) for v in titleurl) )
+        l_titleurl.append(titleurl)
+        titleurlShort = re.findall(pat ,''.join(str(v) for v in l_titleurl))
         #print (titleurlShort)
         pages = "http://www.imdb.com" + ''.join(titleurlShort)
+        del l_titleurl[-1]
+        titleurlShort = ""
         #print (pages)
         list_page.append(pages)
         #if titleurl.parent.name == "small" :
@@ -138,20 +149,24 @@ def getMeta(beautifulSoup):
     return;
 
 def getGenre(beautifulSoup):
+    list_gen.append("N/A")
     s_genres = ""
     for genre in beautifulSoup.find_all("div", { "class" : "subtext" }):
         l = 1
         for genres in genre.find_all('span', { "class" : "itemprop" }):
             #print(genres.text)
-            if len(genre.find_all('span', { "class" : "itemprop" })) == 1:
-                list_gen.append(genres.text)
-            else :
-                if l == 1 :
-                    s_genres = genres.text
-                else :    
-                    s_genres = s_genres + ", " + genres.text
-                if l == len(genre.find_all('span', { "class" : "itemprop" })) :
-                    list_gen.append(s_genres)
+            if genres.text is not None :
+                if len(genre.find_all('span', { "class" : "itemprop" })) == 1:
+                    del list_gen[-1]
+                    list_gen.append(genres.text)
+                else :
+                    if l == 1 :
+                        s_genres = genres.text
+                    else :    
+                        s_genres = s_genres + ", " + genres.text
+                    if l == len(genre.find_all('span', { "class" : "itemprop" })) :
+                        del list_gen[-1]
+                        list_gen.append(s_genres)
             l = l + 1        
     #print(list_gen)
     return;
@@ -176,17 +191,21 @@ def getDir(beautifulSoup):
     return;
 
 def getStar(beautifulSoup):
+    list_star.append("N/A")
     stars = ""
     for star in beautifulSoup.find_all("span", { "itemprop" : "actors" }):       
-        #print(star.text)
-        if ',' in star.text:
-            stars = stars + star.text.replace("             ", "")
-        else:
-            if stars == "" :
-                list_star.append(star.text.replace("\n", ""))
+        if star.text is not None :
+            #print(star.text)
+            if ',' in star.text:
+                stars = stars + star.text.replace("             ", "")
             else:
-                stars = stars + star.text
-                list_star.append(stars.replace("\n", ""))          
+                if stars == "" :
+                    del list_star[-1]
+                    list_star.append(star.text.replace("\n", ""))
+                else:
+                    stars = stars + star.text
+                    del list_star[-1]
+                    list_star.append(stars.replace("\n", ""))          
     #print(list_star)        
     return;
 
@@ -230,6 +249,28 @@ def topBox():
              +"\nStarring: " + list_star[i] + "\n")
     print("----------------------------------------------------------------------------------")
     
+    #OutPut
+    for i in range(0, len(list_weekend_box)):
+        dataset = {
+            "title": list_title[i],
+            "poster": list_posterUrl[i],
+            "url": list_page[i],
+            "genre": list_gen[i],
+            "rate": list_rate[i],
+            "score": list_score[i],
+            "director": list_dir[i],
+            "starring": list_star[i],
+            "weekend_box": list_weekend_box[i],
+            "total_box": list_box[i],
+            "week": list_week[i],
+        }
+        datasets.append(dataset)
+    encodedjson = json.dumps(datasets)
+    #print(encodedjson)
+    
+    with open('topBoxOffice_' + now.strftime("%Y-%m-%d") + '.txt', 'w') as outfile:
+        json.dump(datasets, outfile)
+    
     #clean list
     clenList()
        
@@ -259,6 +300,24 @@ def search():
              +"\nStarring: " + list_star[i] + "\n")
     print("----------------------------------------------------------------------------------")
     
+    #OutPut
+    for i in range(0, len(list_title)):
+        dataset = {
+            "title": list_title[i],
+            "poster": list_posterUrl[i],
+            "url": list_page[i],
+            "genre": list_gen[i],
+            "rate": list_rate[i],
+            "score": list_score[i],
+            "director": list_dir[i],
+            "starring": list_star[i],
+        }
+        datasets.append(dataset)
+    encodedjson = json.dumps(datasets)
+    #print(encodedjson)
+    with open('searchResult_' + searching +'.txt', 'w') as outfile:
+        json.dump(datasets, outfile)
+    
     #clean list
     clenList()
        
@@ -279,4 +338,9 @@ while wrong_input == 1 :
         else :
             print("Bye")
             wrong_input = 0
+
+
+# In[ ]:
+
+
 
